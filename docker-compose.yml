@@ -1,0 +1,12 @@
+services:
+  fastapi_app:
+    build:
+      context: ./fast_api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:80"
+    working_dir: /code
+    volumes:
+      - ./fast_api:/code
+    environment:
+      - PYTHONUNBUFFERED=1
