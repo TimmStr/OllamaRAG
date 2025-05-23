@@ -10,6 +10,7 @@ services:
       - ./fast_api:/code
     environment:
       - PYTHONUNBUFFERED=1
+    container_name: fastapi
 
   openwebui:
     image: ghcr.io/open-webui/open-webui:main

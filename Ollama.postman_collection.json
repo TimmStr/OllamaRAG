@@ -1,0 +1,37 @@
+{
+	"info": {
+		"_postman_id": "b8e518cd-26e6-48f1-81bf-0abf4d8b3e84",
+		"name": "Ollama",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "45258511"
+	},
+	"item": [
+		{
+			"name": "localhost:8000/fetch_and_save_papers",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"search_query\": \"cat:cs.AI\",\n    \"max_results\": 100,\n    \"start_index\": 0,\n    \"filename\": \"top_100_ai_papers.csv\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/fetch_and_save_papers",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"fetch_and_save_papers"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
