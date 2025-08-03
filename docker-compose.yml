@@ -1,17 +1,129 @@
 services:
-  fastapi_app:
-    build:
-      context: ./fast_api
-      dockerfile: Dockerfile
-    ports:
-      - "8000:80"
-    working_dir: /code
+  #Logging
+  fluentd:
+    build: ./fluentd
     volumes:
-      - ./fast_api:/code
+      - ./fluentd/conf:/fluentd/etc
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    container_name: fluentd
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.1
+    container_name: elasticsearch
+    hostname: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false # Disable security for testing
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9200/_cluster/health" ]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+    ports:
+      - 9200:9200
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.17.1
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    ports:
+      - "5601:5601"
+    container_name: kibana
+
+  grafana:
+    image: grafana/grafana:main
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    container_name: grafana
+
+  #Microservices
+  collector-service:
     environment:
       - PYTHONUNBUFFERED=1
-    container_name: fastapi
+    build:
+      context: ./collector_service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    working_dir: /code
+    volumes:
+      - ./collector_service:/code
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+    restart: unless-stopped
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: "localhost:24224"
+        tag: "collector_service"
+    links:
+      - fluentd
+    container_name: collector-service
 
+  db-service:
+    environment:
+      - PYTHONUNBUFFERED=1
+    build:
+      context: ./db_service
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./db_service:/code
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+    restart: unless-stopped
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: "localhost:24224"
+        tag: "db-service"
+    links:
+      - fluentd
+    container_name: db-service
+
+  rag-service:
+    environment:
+      - PYTHONUNBUFFERED=1
+    build:
+      context: .
+      dockerfile: rag_service/Dockerfile
+    ports:
+      - "8002:8002"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
+    volumes:
+      - ./rag_rest_api/rag_app:/code/rag_app
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+    restart: unless-stopped
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: "localhost:24224"
+        tag: "rag-rest-api-service"
+    links:
+      - fluentd
+    runtime: nvidia
+    container_name: rag-service
+
+  # External Services
   openwebui:
     image: ghcr.io/open-webui/open-webui:main
     ports:
@@ -21,8 +133,34 @@ services:
     environment:
       - OLLAMA_BASE_URLS=http://ollama:11434
     restart: unless-stopped
+    container_name: openwebui
+
+  timescaledb:
+    image: timescale/timescaledb-ha:pg17
+    container_name: postgres-timescaledb
+    restart: always
+    shm_size: 16g
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=papers
+    volumes:
+      - ~/docker_volumes:/var/lib/postgresql/data
+    tty: true
+    stdin_open: true
 
   ollama:
     image: ollama/ollama:latest
     container_name: ollama
     hostname: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    restart: always
+
+volumes:
+  grafana_data:
+  ollama-data:
+  open-webui-data:

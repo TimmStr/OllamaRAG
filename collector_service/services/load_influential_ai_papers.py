@@ -6,6 +6,7 @@ from xml.etree.ElementTree import Element
 
 import requests
 
+from utils import create_dir
 from utils.paths import DATA
 
 BASE_URL = "http://export.arxiv.org/api/query?"
@@ -69,20 +70,18 @@ def download_pdf(pdf_url: str, save_dir: str, paper_title: str):
     """
     Download the PDF from the given URL and save it to the specified directory.
     """
+    filename = paper_title.replace(" ", "_").replace("/", "_") + ".pdf"
     try:
-        # Sicherstellen, dass das Verzeichnis existiert
-        if not os.path.exists(save_dir):
-            os.makedirs(save_dir)
+        create_dir(save_dir)
+        # Convert the title to a valid file name (no special characters)
 
-        # Den Titel in einen gültigen Dateinamen umwandeln (keine Sonderzeichen)
-        filename = paper_title.replace(" ", "_").replace("/", "_") + ".pdf"
         file_path = os.path.join(save_dir, filename)
 
-        # PDF-Datei herunterladen
+        # Download PDF-File
         response = requests.get(pdf_url)
-        response.raise_for_status()  # Wird ausgelöst, wenn der HTTP-Statuscode != 200
+        response.raise_for_status()
 
-        # Die PDF speichern
+        # Save PDF
         with open(file_path, 'wb') as f:
             f.write(response.content)
 
@@ -90,11 +89,12 @@ def download_pdf(pdf_url: str, save_dir: str, paper_title: str):
 
     except requests.exceptions.RequestException as e:
         print(f"Error downloading {pdf_url}: {e}")
+    return filename
 
 
 def save_to_csv(papers: List[Dict], **kwargs):
     filename = kwargs.get("filename")
-    keys = ['title', 'summary', 'authors', 'published', 'url', 'pdf_url']
+    keys = ['title', 'summary', 'authors', 'published', 'url', 'pdf_url', 'file_path']
     if not papers:
         print("No papers to save.")
         return
@@ -110,21 +110,20 @@ def fetch_and_save_top_100_papers(**kwargs):
     """
     Pipeline to retrieve top influential papers for a topic and save the PDFs.
     """
-    search_query = kwargs.get("search_query", "cat:cs.AI")
-    max_results = kwargs.get("max_results", 100)
-    start_index = kwargs.get("start_index", 0)
-    save_dir = kwargs.get("save_dir", os.path.join(DATA, "pdfs"))  # Zielordner für die PDFs (Standard ist './pdfs')
-
     print("Collect top 100 most influential AI-Papers...")
-    ai_papers = get_arxiv_papers(search_query=search_query, max_results=max_results, start_index=start_index)
+    ai_papers = get_arxiv_papers(search_query=kwargs.get("search_query", "cat:cs.AI"),
+                                 max_results=kwargs.get("max_results", 100),
+                                 start_index=kwargs.get("start_index", 0))
 
     if ai_papers:
-        save_to_csv(ai_papers, **kwargs)
         for paper in ai_papers:
             pdf_url = paper.get('pdf_url')
             paper_title = paper.get('title')
             if pdf_url:
-                download_pdf(pdf_url, save_dir, paper_title)
+                filename = download_pdf(pdf_url,
+                             kwargs.get("save_dir", os.path.join(DATA, "pdfs")),
+                             paper_title)
+                save_to_csv(ai_papers, **kwargs)
             else:
                 print(f"No PDF available for paper: {paper_title}")
     else:
