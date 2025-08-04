@@ -116,9 +116,10 @@ def fetch_and_save_top_100_papers(**kwargs):
             paper_file_path = paper.get(FILE_PATH)
             if pdf_url:
                 download_pdf(pdf_url, paper_file_path)
+                save_to_csv(ai_papers)
             else:
                 print(f"No PDF available for paper: {paper.get(PAPER_TITLE)}")
-        save_to_csv(ai_papers)
+
     else:
         print("No papers found.")
 

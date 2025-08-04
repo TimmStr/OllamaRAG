@@ -15,7 +15,8 @@ from fastapi import FastAPI
 
 from entities import PaperClass
 from services.postgres_service import insert_paper_into_table
-from utils.constants import FILENAME, CONTENT
+from utils.constants import PAPER_TITLE, PAPER_SUMMARY, PAPER_AUTHORS, PAPER_PUBLISHED, PAPER_URL, PAPER_PDF_URL, \
+    PAPER_FILE_PATH, PAPER_CONTENT
 from utils.logging_config import log_transfer_time
 
 jobstores = {
@@ -45,8 +46,14 @@ async def insert_paper(paper_payload: PaperClass):
     print(f"Received file: {paper_payload.filename}")
     print(f"Content: {paper_payload.content[:50]}...")  # nur die ersten 50 Zeichen
     kwargs = {
-        FILENAME: paper_payload.filename,
-        CONTENT: paper_payload.content
+        PAPER_TITLE: paper_payload.title,
+        PAPER_CONTENT: paper_payload.content,
+        PAPER_SUMMARY: paper_payload.summary,
+        PAPER_AUTHORS: paper_payload.authors,
+        PAPER_PUBLISHED: paper_payload.published,
+        PAPER_URL: paper_payload.url,
+        PAPER_PDF_URL: paper_payload.pdf_url,
+        PAPER_FILE_PATH: paper_payload.file_path
     }
     print("result", insert_paper_into_table(**kwargs))
     return {"message": "OK"}

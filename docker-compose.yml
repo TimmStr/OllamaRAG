@@ -83,6 +83,9 @@ services:
       - ./db_service:/code
       - "/etc/timezone:/etc/timezone:ro"
       - "/etc/localtime:/etc/localtime:ro"
+    depends_on:
+      timescaledb:
+        condition: service_started
     restart: unless-stopped
     logging:
       driver: "fluentd"

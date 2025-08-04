@@ -1,0 +1,67 @@
+{
+	"info": {
+		"_postman_id": "0fab705d-4f24-4198-9686-ba66bc21f872",
+		"name": "Ollama Rag",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "43164684"
+	},
+	"item": [
+		{
+			"name": "Collector",
+			"item": [
+				{
+					"name": "Fetch and save papers",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"search_query\":\"cat:cs.AI\",\n    \"max_results\": 100,\n    \"start_index\": 0\n\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8000/fetch_and_save_papers",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"fetch_and_save_papers"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Extract and save",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8000/extract_and_save",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"extract_and_save"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
