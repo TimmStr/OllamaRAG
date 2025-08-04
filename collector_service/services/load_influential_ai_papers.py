@@ -7,7 +7,8 @@ from xml.etree.ElementTree import Element
 import requests
 
 from utils import create_dir
-from utils.paths import DATA
+from utils.constants import PDF_URL, FILE_PATH, PAPER_TITLE, SUMMARY, AUTHORS, PUBLISHED, URL, TITLE
+from utils.paths import CSV_PATH, PDF_BASE_PATH
 
 BASE_URL = "http://export.arxiv.org/api/query?"
 
@@ -28,14 +29,15 @@ def extract_paper_information(entry: Element) -> Dict:
     published = safe_find(entry, "{http://www.w3.org/2005/Atom}published")
     paper_url = safe_find(entry, "{http://www.w3.org/2005/Atom}id")
     pdf_url = paper_url.replace("abs", "pdf") + ".pdf"
-
+    file_path = os.path.join(PDF_BASE_PATH, title.replace(" ", "_").replace("/", "_") + ".pdf")
     return {
-        'title': title,
-        'summary': summary,
-        'authors': ", ".join(authors),
-        'published': published,
-        'url': paper_url,
-        'pdf_url': pdf_url
+        TITLE: title,
+        SUMMARY: summary,
+        AUTHORS: ", ".join(authors),
+        PUBLISHED: published,
+        URL: paper_url,
+        PDF_URL: pdf_url,
+        FILE_PATH: file_path
     }
 
 
@@ -52,6 +54,7 @@ def get_arxiv_papers(**kwargs) -> List[Dict[str, str]]:
         List[Dict[str, str]]: A list of dictionaries containing paper information.
     """
     papers = []
+    create_dir(PDF_BASE_PATH)
     url = f"{BASE_URL}search_query={kwargs.get('search_query')}&start={kwargs.get('start_index')}&max_results={kwargs.get('max_results')}&sortBy=relevance&sortOrder=descending"
 
     try:
@@ -66,17 +69,11 @@ def get_arxiv_papers(**kwargs) -> List[Dict[str, str]]:
     return papers
 
 
-def download_pdf(pdf_url: str, save_dir: str, paper_title: str):
+def download_pdf(pdf_url: str, file_path: str):
     """
     Download the PDF from the given URL and save it to the specified directory.
     """
-    filename = paper_title.replace(" ", "_").replace("/", "_") + ".pdf"
     try:
-        create_dir(save_dir)
-        # Convert the title to a valid file name (no special characters)
-
-        file_path = os.path.join(save_dir, filename)
-
         # Download PDF-File
         response = requests.get(pdf_url)
         response.raise_for_status()
@@ -89,21 +86,19 @@ def download_pdf(pdf_url: str, save_dir: str, paper_title: str):
 
     except requests.exceptions.RequestException as e:
         print(f"Error downloading {pdf_url}: {e}")
-    return filename
 
 
-def save_to_csv(papers: List[Dict], **kwargs):
-    filename = kwargs.get("filename")
-    keys = ['title', 'summary', 'authors', 'published', 'url', 'pdf_url', 'file_path']
+def save_to_csv(papers: List[Dict]):
+    keys = [TITLE, SUMMARY, AUTHORS, PUBLISHED, URL, PDF_URL, FILE_PATH]
     if not papers:
         print("No papers to save.")
         return
 
-    with open(filename, 'w+', newline='', encoding='utf-8') as file:
+    with open(CSV_PATH, 'w+', newline='', encoding='utf-8') as file:
         writer = csv.DictWriter(file, fieldnames=keys)
         writer.writeheader()
         writer.writerows(papers)
-    print(f"{len(papers)} Papers successfully saved in {filename}.")
+    print(f"{len(papers)} Papers successfully saved in {CSV_PATH}.")
 
 
 def fetch_and_save_top_100_papers(**kwargs):
@@ -117,15 +112,13 @@ def fetch_and_save_top_100_papers(**kwargs):
 
     if ai_papers:
         for paper in ai_papers:
-            pdf_url = paper.get('pdf_url')
-            paper_title = paper.get('title')
+            pdf_url = paper.get(PDF_URL)
+            paper_file_path = paper.get(FILE_PATH)
             if pdf_url:
-                filename = download_pdf(pdf_url,
-                             kwargs.get("save_dir", os.path.join(DATA, "pdfs")),
-                             paper_title)
-                save_to_csv(ai_papers, **kwargs)
+                download_pdf(pdf_url, paper_file_path)
             else:
-                print(f"No PDF available for paper: {paper_title}")
+                print(f"No PDF available for paper: {paper.get(PAPER_TITLE)}")
+        save_to_csv(ai_papers)
     else:
         print("No papers found.")
 
