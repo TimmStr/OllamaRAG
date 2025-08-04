@@ -142,7 +142,7 @@ services:
     image: timescale/timescaledb-ha:pg17
     container_name: postgres-timescaledb
     restart: always
-    shm_size: 16g
+    shm_size: 2g
     ports:
       - "5432:5432"
     environment:
