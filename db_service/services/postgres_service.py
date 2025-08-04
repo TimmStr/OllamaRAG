@@ -1,4 +1,4 @@
-from services.connections.postgres_timescaledb import PostgresTimescaleConnection
+from connections.postgres_timescaledb import PostgresTimescaleConnection
 from utils.constants import (PAPER_TABLE, PAPER_TITLE, PAPER_SUMMARY, PAPER_AUTHORS, PAPER_PUBLISHED, PAPER_URL,
                              PAPER_PDF_URL, PAPER_CONTENT, PAPER_FILE_PATH)
 from utils.queries import table_exists_query, CREATE_PAPER_TABLE_QUERY, insert_paper_query
