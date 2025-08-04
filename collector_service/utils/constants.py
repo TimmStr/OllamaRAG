@@ -1,0 +1,11 @@
+# kwargs keys
+TITLE = "title"
+SUMMARY = "summary"
+AUTHORS = "authors"
+PUBLISHED = "published"
+URL = "url"
+PDF_URL = "pdf_url"
+PAPER_TITLE = "paper_title"
+FILE_PATH = "file_path"
+FILENAME = "filename"
+CONTENT = "content"
