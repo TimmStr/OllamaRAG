@@ -96,12 +96,12 @@ services:
       - fluentd
     container_name: db-service
 
-  rag-service:
+  llm-service:
     environment:
       - PYTHONUNBUFFERED=1
     build:
-      context: .
-      dockerfile: rag_service/Dockerfile
+      context: ./llm_service
+      dockerfile: Dockerfile
     ports:
       - "8002:8002"
     deploy:
@@ -112,7 +112,7 @@ services:
               count: all
               capabilities: [ gpu ]
     volumes:
-      - ./rag_rest_api/rag_app:/code/rag_app
+      - ./llm_service:/code
       - "/etc/timezone:/etc/timezone:ro"
       - "/etc/localtime:/etc/localtime:ro"
     restart: unless-stopped
@@ -120,11 +120,11 @@ services:
       driver: "fluentd"
       options:
         fluentd-address: "localhost:24224"
-        tag: "rag-rest-api-service"
+        tag: "llm-service"
     links:
       - fluentd
     runtime: nvidia
-    container_name: rag-service
+    container_name: llm-service
 
   # External Services
   openwebui:
