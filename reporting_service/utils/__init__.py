@@ -6,9 +6,10 @@ from utils.constants import MAIL_USER, MAIL_HOST, MAIL_PASSWORD, MAIL_PORT, SMB_
     SMB_SERVER_USER, SMB_SERVER_PASSWORD
 from utils.logging_config import exception_handling
 
+load_dotenv()
+
 
 def mail_config():
-    load_dotenv()
     return {
         MAIL_HOST: os.getenv(MAIL_HOST),
         MAIL_USER: os.getenv(MAIL_USER),

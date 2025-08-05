@@ -8,7 +8,6 @@ Last change:    2025/08/04
 """
 
 import re
-import time
 from typing import Literal
 
 from fastapi import FastAPI
@@ -19,8 +18,8 @@ from entities.embedding import multi_lingual_embedder
 from entities.ollama_entities import Llama3, Phi4_friendly
 from entities.request_entities import LLMRequest, PageRequest, LLMRequestPapers
 from services.images import get_erp_images, image_from_path
-from services.indices.generate_confluence_index import get_confluence_vec_store, ConfluenceVecStoreSingleton
-from services.indices.generate_paper_index import get_paper_vec_store
+from services.indices.generate_confluence_index import ConfluenceVecStoreSingleton
+from services.ollama_service import llm_request
 from services.papers.generate_image_descriptions import generate_paper_image_descriptions
 from utils import bin_images_to_text
 from utils.constants import CONFLUENCE_EXAMPLE_QUERY, document_retrieval_prompt, paper_prompt, email_prompt
@@ -63,27 +62,7 @@ def confluence_doc_retriever(input: str = CONFLUENCE_EXAMPLE_QUERY,
 @log_llm_report_time
 @exception_handling
 def confluence_llm_request(req: LLMRequest):
-    start_total = time.time()
-
-    start = time.time()
-    confluence_vector_store = get_confluence_vec_store(req.faiss_index_path)
-    logger.info(f"Time loading Vectorstore: {time.time() - start:.4f} seconds")
-
-    llm = Llama3().create()
-
-    start = time.time()
-    docs = confluence_vector_store.similarity_search_with_score(req.input, k=req.k)
-    logger.info(f"Time for Similarity Search: {time.time() - start:.4f} seconds")
-
-    start = time.time()
-    sorted_docs = sorted(docs, key=lambda x: x[1], reverse=False)
-    logger.info(f"Time to sort: {time.time() - start:.4f} seconds")
-
-    start = time.time()
-    result = llm.invoke(f"Frage: {req.input}. Lasse keine relevanten Informationen weg! \n Context: {sorted_docs}")
-    logger.info(f"Time for LLM call: {time.time() - start:.4f} seconds")
-    logger.info(f"Total duration: {time.time() - start_total:.4f} seconds")
-    logger.info(f"Result: {result}")
+    result = llm_request(req, paper_vec_store=False)
     return {"Result": result}
 
 
@@ -91,29 +70,7 @@ def confluence_llm_request(req: LLMRequest):
 @log_llm_report_time
 @exception_handling
 def paper_llm_request(req: LLMRequestPapers):
-    start_total = time.time()
-
-    start = time.time()
-    paper_vector_store = get_paper_vec_store(req.faiss_index_path)
-    logger.info(f"Time loading Vectorstore: {time.time() - start:.4f} seconds")
-
-    llm = Llama3().create()
-
-    start = time.time()
-    docs = paper_vector_store.similarity_search_with_score(req.input, k=req.k)
-    logger.info(f"Time for Similarity Search: {time.time() - start:.4f} seconds")
-
-    start = time.time()
-    sorted_docs = sorted(docs, key=lambda x: x[1], reverse=False)
-    for k, v in sorted_docs:
-        print(k, v)
-    logger.info(f"Time to sort: {time.time() - start:.4f} seconds")
-
-    start = time.time()
-    result = llm.invoke(f"Frage: {req.input}. Lasse keine relevanten Informationen weg! \n Context: {sorted_docs}")
-    logger.info(f"Time for LLM call:: {time.time() - start:.4f} seconds")
-    logger.info(f"Total duration: {time.time() - start_total:.4f} seconds")
-    logger.info(f"Result: {result}")
+    result = llm_request(req)
     return {"Result": result}
 
 
@@ -136,7 +93,7 @@ def erp_llm_request(req: LLMRequest):
     image_paths = re.findall(r'rag_app/.*?\.png', llm_relevant_docs)
     bin_images = image_from_path(image_paths)
     logger.info(f"Result: {result}")
-    images_as_string = "\n Bilder:\n" + bin_images_to_text(bin_images)
+    images_as_string = "\n Images:\n" + bin_images_to_text(bin_images)
     return {"Result": result + images_as_string}
 
 

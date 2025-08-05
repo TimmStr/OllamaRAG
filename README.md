@@ -1,4 +1,4 @@
-# OllamaRAG# 🧠 AI Knowledge Platform – Modular RAG System with TimescaleDB, LLM, and Automation
+# OllamaRAG 🧠 AI Knowledge Platform – Modular RAG System with TimescaleDB, LLM, and Automation
 
 This project is a modular AI-powered platform that integrates data collection, semantic search (RAG), automated
 reporting, and high-performance storage — all orchestrated via Docker Compose.
@@ -76,7 +76,6 @@ docker compose up -d
 | Reporting-service  | `http://localhost:8003/docs` |
 | OpenWebUI (LLM UI) | `http://localhost:3000`      |
 | Grafana            | `http://localhost:3000`      |
-| Kibana             | `http://localhost:5601`      |
 | Timescaledb (PG)   | `http://localhost:5432`      |
 | Ollama             | `http://localhost:11434`     |
 | Elasticsearch      | `http://localhost:9200`      |

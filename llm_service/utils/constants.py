@@ -40,6 +40,7 @@ def document_retrieval_prompt(result, image_documents):
             Available documents:
             {image_documents}"""
 
+
 def email_prompt(email_content):
     return f"""
     You are a professional business writing assistant.
@@ -60,3 +61,14 @@ def email_prompt(email_content):
     
     {email_content}
     """
+
+
+def rag_prompt(question, documents):
+    return f"""You will be given a question and one or more reference documents. Your task is to answer the question only using the information contained in these documents.
+            Do not invent or assume information that is not explicitly stated in the documents.
+            Do not omit any important details or facts relevant to the answer.
+            If multiple relevant details are present, include all of them in a clear and concise manner.
+            If the documents do not contain enough information to fully answer the question, explicitly state that the information is missing.
+            Your goal is to provide a complete, accurate, and well-structured response that reflects all the important data from the documents.
+            Question: {question}
+            Documents: {documents}"""
