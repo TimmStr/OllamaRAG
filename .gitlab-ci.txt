@@ -1,0 +1,44 @@
+stages:
+  - build
+  - test
+
+variables:
+  DOCKER_BUILDKIT: 1
+
+default:
+  image: docker:latest
+  before_script:
+    - docker info
+    - docker compose version
+
+build_db_service:
+  stage: build
+  script:
+    - docker compose -f docker-compose.yml build db-service
+
+test_db_service:
+  stage: test
+  before_script:
+    - docker info
+    - docker compose version
+  script:
+    - docker compose -f docker-compose.yml up -d db-service
+    - docker compose -f docker-compose.yml exec db-service pytest tests/
+  after_script:
+    - docker stop db-service-1
+
+build_reporting_service:
+  stage: build
+  script:
+    - docker compose -f docker-compose.yml build reporting-service
+
+test_reporting_service:
+  stage: test
+  before_script:
+    - docker info
+    - docker compose version
+  script:
+    - docker compose -f docker-compose.yml up -d reporting-service
+    - docker compose -f docker-compose.yml exec reporting-service pytest tests/
+  after_script:
+    - docker stop reporting-service
