@@ -11,9 +11,11 @@ system.
 
 This repository features two short demo videos:
 1. **Excel AI Agent** – Demonstrating an AI-powered agent working directly inside Excel for intelligent data processing and automation.
+
 [Excel Agent Demo.webm](https://github.com/user-attachments/assets/3dc6db4f-c400-4743-8b44-7165d03bac44)
 
-2. **LLM WebUI Text Query** – Showcasing how to send a text request to a large language model through the web-based user interface.  
+3. **LLM WebUI Text Query** – Showcasing how to send a text request to a large language model through the web-based user interface.
+
 [E-Mail Demo.webm](https://github.com/user-attachments/assets/cdd94cd8-44da-484b-bc82-a3c1b85ad831)
 
 
