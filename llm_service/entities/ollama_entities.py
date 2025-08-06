@@ -3,6 +3,9 @@ import os
 from langchain_ollama import OllamaLLM
 
 from utils.constants import OLLAMA_TEST_SERVER_URL
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class BaseOllamaLLM:
@@ -10,7 +13,7 @@ class BaseOllamaLLM:
     def __init__(self, model, base_url=None, num_ctx=10000,
                  temperature=0.0, mirostat=2, mirostat_eta=0.5, mirostat_tau=4, **kwargs):
         self.model = model
-        self.base_url = base_url if not None else os.getenv(OLLAMA_TEST_SERVER_URL)
+        self.base_url = os.getenv(OLLAMA_TEST_SERVER_URL)
         self.num_ctx = num_ctx
         self.temperature = temperature
         self.mirostat = mirostat

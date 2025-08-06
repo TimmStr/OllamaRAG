@@ -1,7 +1,6 @@
 import os
 
-APP = "rag_app"
-DATA = os.path.join(APP, "data")
+DATA = "data"
 
 CONFLUENCE_HTML_PAGES = os.path.join(DATA, "confluence_html_pages")
 
