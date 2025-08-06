@@ -8,6 +8,9 @@ system.
 
 ---
 
+[Screencast from 2025-08-06 06-41-18.webm](https://github.com/user-attachments/assets/4cab81a5-f68d-460c-b26d-dbbc97a2bf48)
+
+
 ## 🧩 Services Overview
 
 ### 1. **collector_service**
