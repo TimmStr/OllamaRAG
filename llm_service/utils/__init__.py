@@ -25,7 +25,7 @@ def mail_config():
 @exception_handling
 def extract_page_number(llm_response: str) -> List:
     pages = []
-    for match in re.findall(r'Seite (\d+(?:-\d+)?)', llm_response):
+    for match in re.findall(r'Page (\d+(?:-\d+)?)', llm_response):
         if '-' in match:
             start, end = map(int, match.split('-'))
             pages.extend(range(start, end + 1))

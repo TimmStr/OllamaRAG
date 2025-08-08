@@ -1,14 +1,10 @@
-import glob
-import os
 import re
 from typing import List, Tuple
 
 from langchain_core.documents import Document
-from natsort import natsort
 
-from utils import get_erp_image_paths, get_erp_text_paths
+from utils import get_erp_text_paths
 from utils.logging_config import exception_handling
-from utils.paths import PAPERS_OUTPUT
 
 
 @exception_handling
